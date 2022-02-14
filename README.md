@@ -1,7 +1,7 @@
 # Bayesian Filtering Method
 **A Python program that applies Bayesian filtering method (BFM) to estimate the selection-coefficient from barcode-count data for barcode-lineage-tracking (BLT) experiment.**
 
-The central concept of this method is the Bayesian probability distribution on the lineage's selection-coefficient, which is updated one data point at a time (prior -> posterior). At each time step, global parameters (experimental noise & population’s mean selection-coefficient) are estimated based on the current knowledge of individual lineages. All individual lineages are classified into adaptive or neutral class. The Bayesian estimate of selection coefficient, for single lineage, is simply the mean of posterior distribution of individual adpative lineage. 
+The central concept of this method is the Bayesian probability distribution on the lineage's selection-coefficient, which is updated one data point at a time (prior -> posterior). At each time step, global parameters (experimental noise & population’s mean selection-coefficient) are estimated based on the current knowledge of individual lineages. All individual lineages are classified into adaptive or neutral class. This Bayesian method estimates the selection coefficient, for single lineage, from the mean of posterior distribution of individual adpative lineage. 
 
 * Before you run the code, check **System Request** and **Data Setting**. 
 * Execute the program 
