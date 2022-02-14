@@ -1,13 +1,17 @@
 # Bayesian Filtering Method
-A Python program that applies Bayesian filtering method to estimate the selection-coefficient from barcode-lineage-tracking data.
+**A Python program that applies Bayesian filtering method (BFM) to estimate the selection-coefficient from barcode-count data for barcode-lineage-tracking (BLT) experiment.**
 
-The central concept of this method is the Bayesian probability distribution on the lineage's selection-coefficient, which is updated one data point at a time (prior -> posterior). At each time step, global parameters (experimental noise & population’s mean selection-coefficient) are estimated based on the current knowledge of individual lineages. All individual lineage is classified into adaptive or neutral class. The Bayesian estimate of selection coefficient, for single lineage, is simply the mean of posterior distribution of individual adpative lineage. 
+The central concept of this method is the Bayesian probability distribution on the lineage's selection-coefficient, which is updated one data point at a time (prior -> posterior). At each time step, global parameters (experimental noise & population’s mean selection-coefficient) are estimated based on the current knowledge of individual lineages. All individual lineages are classified into adaptive or neutral class. The Bayesian estimate of selection coefficient, for single lineage, is simply the mean of posterior distribution of individual adpative lineage. 
 
-* Before you run the code, check System Request and Data Setting. 
+* Before you run the code, check **System Request** and **Data Setting**. 
 * Execute the program 
   ```sh
   python ./main_scripts/main.py
   ```
+* Example of input barcode-data "./input/Data_BarcodeCount_simuMEE_20220213.txt", with running results under "./output/"
+* A simulation program is provided as a data generator for barcode-lineage-tracking. You could play with it and use simulation data to test the BFM code. 
+* This project aims to (1) identify adpative barcode (2) estimate the selection coefficient for each adaptive lineaege (3) infer the trajectory of mean-fitness (i.e. population mean of selection coefficient) (4) estimate the systematic noise in BLT experiment.
+
 ## System Request
 1. Python version > 2.6
 2. Libraries (Run a test code to check libraries)
@@ -27,7 +31,7 @@ The central concept of this method is the Bayesian probability distribution on t
 ## Data Setting
 1. Parameters (Open "./main_scripts/myConstant.py". Edit **NUMBER_OF_PROCESSES** and **EXPERIMENTAL PARAMETERS** for your case.)
 2. Input data (Save your barcode-count data as a txt file under "./input/", with barcodes=row and time-point=column)
-3. Test (Edit **datafilename** in "./main_scripts/myReadfile.py" as above input file name. Then run code to test the file reading.)
+3. Test (Edit **datafilename** in "./main_scripts/myReadfile.py" as your input file name. Then run code to test the file reading.)
     ```sh
     python ./main_scripts/myReadfile.py
     ```
@@ -40,17 +44,14 @@ The central concept of this method is the Bayesian probability distribution on t
 3. (Optional) Run "./main_scripts/plot_result.py" to output results or make plots.
 
 ### Folder Description
-  ./main_scripts/: python program of Barcode Filtering Method
-
-  ./input/: folder for barcode count data from lineage tracking experiment
-
-  ./ouput/: folder for outputfile from this python program
-
-  ./main_scripts/model_code/: statistical model underline the Bayesian inferrence
-
-  ./simulation_MEE/: simulation program to generate barcode-count-data. A simulation program is provided as data generator for barcode-lineage-tracking. You could play with it and use simulation data to test the BFM code. 
+  **./main_scripts/**: python program of Barcode Filtering Method, 
+  **./main_scripts/model_code/**: statistical model underline the Bayesian inferrence
+  **./input/**: folder for barcode count data from BLT experiment
+  **./ouput/**: folder for outputfile from this python program
+  **./simulation_MEE/**: simulation program to generate barcode-count-data. 
 
 ### Contact
 Huan-Yu Kuo: [linkedin,](https://www.linkedin.com/in/huan-yu-kuo/)  -hukuo@ucsd.edu 
 
 Project Link: [https://github.com/HuanyuKuo/Bayesian_Filtering_Method](https://github.com/HuanyuKuo/Bayesian_Filtering_Method)
+
