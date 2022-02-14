@@ -1,0 +1,19 @@
+===Print value of Globals===
+Current time point (integer)	8
+Measurment_dispersion_epsilon	0.0009966999265432158
+Mean_Fitness	0.7825297929095396
+Total_Read	1003311.0
+Number_of_Cell_before_Dilution	20000000.0
+Dilution_Ratio	100.0
+Number_of_Transition_Cycle_between_Time_point	2.0
+Number_of_lineage_to_fit_Global	1666
+
+===Fitting meanfitness and epsilon===
+
+    free: array([False, False])
+     fun: 1.59220321016508
+ message: 'convergence within deltatol'
+    nfev: 31
+     nit: 8
+ success: True
+       x: array([ 0.78252979, -3.00143557])

@@ -1,0 +1,19 @@
+===Print value of Globals===
+Current time point (integer)	6
+Measurment_dispersion_epsilon	0.01841545713009358
+Mean_Fitness	0.6587704758755892
+Total_Read	965645.0
+Number_of_Cell_before_Dilution	20000000.0
+Dilution_Ratio	100.0
+Number_of_Transition_Cycle_between_Time_point	2.0
+Number_of_lineage_to_fit_Global	3000
+
+===Fitting meanfitness and epsilon===
+
+    free: array([ True,  True])
+     fun: 2.2650838917665026
+ message: 'convergence within deltatol. dim 1 is free at optimum. dim 0 is free at optimum'
+    nfev: 40
+     nit: 9
+ success: True
+       x: array([ 0.65877048, -1.7348175 ])
