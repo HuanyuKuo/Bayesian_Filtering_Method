@@ -51,7 +51,7 @@ The central concept of this method is the Bayesian probability distribution on t
   **./simulation_MEE/**: simulation program to generate barcode-count-data. 
 
 ### Contact
-Huan-Yu Kuo: [linkedin,](https://www.linkedin.com/in/huan-yu-kuo/)  -hukuo@ucsd.edu 
+Huan-Yu Kuo: [linkedin,](https://www.linkedin.com/in/huan-yu-kuo/)  hukuo@ucsd.edu 
 
 Project Link: [https://github.com/HuanyuKuo/Bayesian_Filtering_Method](https://github.com/HuanyuKuo/Bayesian_Filtering_Method)
 
