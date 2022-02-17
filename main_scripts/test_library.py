@@ -37,5 +37,5 @@ print(lib.__name__, lib.format_version)
 import noisyopt as lib # https://github.com/andim/noisyopt
 print(lib.__name__, lib.__version__)
 
-#import pystan as lib # https://github.com/stan-dev/pystan
-#print(lib.__name__, lib.__version__)
+import pystan as lib # https://github.com/stan-dev/pystan
+print(lib.__name__, lib.__version__)
