@@ -91,10 +91,12 @@ def read_selection_Simulation(filedirname):
 if __name__ == '__main__':
     
     datafilename = 'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
+    #datafilename = '41586_2015_BFnature14279_MOESM90_ESM_cycle_downsample'+ '.txt'  
     lins, totalread, cycles = mr.my_readfile(datafilename)
-    const = Constant(totalread, mc.epsilon)
+    const = Constant(totalread, cycles)
     
     case_name = 'Simulation_20222013_Population1' 
+    #case_name = 'nature2015_Rep1'#'Simulation_20222013_Population1' 
     lineage_info =  {'lineage_name': case_name}
     
     
@@ -107,7 +109,7 @@ if __name__ == '__main__':
     ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time = read_selection_Bayes(lins, const, lineage_info)
     
     
-    _t_Bayes = [sum(const.Ct[0:i]) for i in range(len(const.Ct))]
+    _t_Bayes = [sum(const.Ct[1:i]) for i in range(len(const.Ct))]
     t_Bayes = [(_t_Bayes[i]+_t_Bayes[i+1])/2 for i in range(len(_t_Bayes)-1)]
     
     # Output Mean-fitness file
@@ -131,7 +133,7 @@ if __name__ == '__main__':
     # Optional Plots
     #
     # ###################################################
-    FLAG_PLOT_SIMULATION = True 
+    FLAG_PLOT_SIMULATION = True#False
     # True: plot Bayesian inferred value with simulation value
     # Flase: plot Bayesian inferred value only
     #

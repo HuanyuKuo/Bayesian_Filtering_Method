@@ -11,7 +11,7 @@ MEE_Constant.py
 InputFileDir = '../input/'
 OutputFileDir = '../output/'
 
-NUMBER_OF_PROCESSES = 16 # Multi-processing
+NUMBER_OF_PROCESSES = 8 # Multi-processing
 #
 # To know the number of CPU core, execute:
 # import psutil
@@ -38,8 +38,8 @@ epsilon = float(0.01) # initial value of epsilon, default
 # initial prior of s for SModel_N is uniform distribution in range (smin, smax)
 # Min s and Max s for Bayesian method (allowable \s range for adpative lineages and the value of mean fitness)
 #
-smax = float(2)
-smin = float(-2)
+smax = float(2.5) # 30% * Log2(D)
+smin = float(-2.5)
 NUMBER_LINEAGE_MLE = 3000# Number of lineage in likelihood function (MLE for inferring mean-fintess)
 rc_default = 5
 log10BF_threshold = 1.

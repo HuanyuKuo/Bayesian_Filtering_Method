@@ -19,15 +19,16 @@ LINEAGE_TAG = mc.LINEAGE_TAG
 OutputFileDir = mc.OutputFileDir
 
 class Constant():
-    def __init__(self, total_reads, eps):
+    def __init__(self, total_reads, cycles):
         self.T = len(total_reads)#int(mc.T) # total time point
         self.Dt = [float(mc.D) for i in range(0,self.T)]        # dilution ratio
-        self.Ct = [float(mc.cycle) for i in range(0,self.T)]    # cycle between two reads
+        self.Ct = ['']                                          # cycle between two reads
+        self.Ct.extend(list(cycles))
         self.Nt = [float(mc.N) for i in range(0,self.T)]        # total number of cells in the flask before dilution (after growing)
         self.Rt = total_reads
         self.smin = mc.smin
         self.smax = mc.smax
-        self.eps = eps
+        self.eps = mc.epsilon
         
     def print_values(self):
         print("Total time points\t", self.T, "\t# const.T")
@@ -39,12 +40,12 @@ class Constant():
 class Global():
     def __init__(self, const):
         self.current_timepoint = 0
-        self.epsilon = float(0.01)  # measuring dispersion (0-1) (default) # epsilon=0, Measurement process is Poisson (VMR=1), if epsilon=1, Measurement process is NB with VMR=2. # VMR=vairance mean ratio
+        self.epsilon = float(const.eps)  # measuring dispersion (0-1) (default) # epsilon=0, Measurement process is Poisson (VMR=1), if epsilon=1, Measurement process is NB with VMR=2. # VMR=vairance mean ratio
         self.meanfitness = float(0.0) # mean-fitness (default)
-        self.R = float(const.Rt[0])  # total number of reads at time t (default)
-        self.D = float(const.Dt[0])
-        self.C = float(const.Ct[0])
-        self.N = float(const.Nt[0])
+        self.R = const.Rt[self.current_timepoint]  # total number of reads at time t (default)
+        self.D = const.Dt[self.current_timepoint]
+        self.C = const.Ct[self.current_timepoint]
+        self.N = const.Nt[self.current_timepoint]
         self.epsilon_const = float(const.eps)
                                    
     def print_values(self):

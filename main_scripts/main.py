@@ -221,13 +221,13 @@ if __name__ == '__main__':
     #
     # create lineage & constant
     lins, totalread, cycles = mr.my_readfile(datafilename)
-    const = Constant(totalread, eps=mc.epsilon)
+    const = Constant(totalread, cycles)
     for t in range(1, const.T):
         const.Ct[t] = cycles[t-1]
     #
     # run Bayesian Filtering Method
     start_time = 1
-    end_time = const.T
+    end_time = 2#const.T
     lineage_info =  {'lineage_name': case_name}
     run_lineages(lins, start_time, end_time, const, lineage_info)
     
