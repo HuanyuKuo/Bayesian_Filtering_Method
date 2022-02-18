@@ -37,7 +37,7 @@ if __name__ == '__main__':
     datafilename =  YOUR_FILE_NAME #'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
     
     lins, totalread, cycles = my_readfile(datafilename)
-    _const = Constant(totalread, eps=0.01)
+    _const = Constant(totalread, cycles)
     for t in range(1, _const.T):
         _const.Ct[t] = cycles[t-1]
     
