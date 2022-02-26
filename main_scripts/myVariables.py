@@ -180,7 +180,7 @@ class Lineage():
         self.SModel_N_smax = ''
         self.SModel_N_smin = ''
         #self.log10_BayesFactor_vector = ''
-        self.log10_BayesFactor_past = ''
+        #self.log10_BayesFactor_past = ''
         self.log_prob_survive_past = ''
         self._initialize_t0()
         
@@ -247,6 +247,9 @@ class Lineage():
         else:
             print(f"ERROR! in class Lineage set_log10BF for BCID {self.BCID}: input last_time ={last_time} must be integer >= 0  and < {self.T_END} to get log10 Bayes Factor")
     '''
+    def log10_BayesFactor(self):
+        return (self.sm.log_noramlization_const - self.nm.log_noramlization_const) /np.log(10)
+    
     #def reTAG(self, critical_read, last_time):
     def _reTAG(self, last_time):    
         critical_read = mc.rc_default#max(critical_read, rc_default)
@@ -267,9 +270,9 @@ class Lineage():
                 newtag = LINEAGE_TAG['NEU']
             
             else:
-                log10_BayesFactor_past =  (self.sm.log_noramlization_const - self.nm.log_noramlization_const) /np.log(10)
-                self.log10_BayesFactor_past = log10_BayesFactor_past
-                
+                #log10_BayesFactor_past =  (self.sm.log_noramlization_const - self.nm.log_noramlization_const) /np.log(10)
+                #self.log10_BayesFactor_past = log10_BayesFactor_past
+                log10_BayesFactor_past = self.log10_BayesFactor()
                 if (log10_BayesFactor_past > mc.log10BF_threshold) and (self.sm.post_parm_NormS_mean>0):
                     newtag = LINEAGE_TAG['ADP']
                 else:

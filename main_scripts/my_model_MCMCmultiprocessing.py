@@ -18,7 +18,7 @@ import pickle
 from matplotlib import pyplot as plt
 import numpy as np
 import scipy
-
+import os.path
 
 
 #FLAG_PLOT_POSTERIOR = True #False
@@ -304,13 +304,14 @@ def get_posterior_info(inputdict, fit):
         results = fit.extract(permuted=True)
         cell_num = results['cell_num']
         log_joint_prob = results['log_joint_prob']
-        Rhat_cellnum = fit.summary("cell_num")["summary"][0][9]
+        #Rhat_cellnum = fit.summary("cell_num")["summary"][0][9]
         #
         # Fit the posterior probability, then output fitting parameters
         #
         posterior = mf.N_model_posterior(data = cell_num, log_joint_prob=log_joint_prob)
-        outputdict.update({ 'k': posterior.k, 'theta': posterior.theta, 
-                           'log_norm': posterior.log_normalization_const, 'Rhat_cellnum': Rhat_cellnum})
+        #outputdict.update({ 'k': posterior.k, 'theta': posterior.theta, 
+        #                   'log_norm': posterior.log_normalization_const, 'Rhat_cellnum': Rhat_cellnum})
+        outputdict.update({ 'k': posterior.k, 'theta': posterior.theta, 'log_norm': posterior.log_normalization_const})
         
         log_prob_survive_cummulated = inputdict['log_prob_survive']+ np.log(results['prob_survive'][0]) 
         outputdict.update({'log_prob_survive_cummulated': log_prob_survive_cummulated})
@@ -347,8 +348,8 @@ def get_posterior_info(inputdict, fit):
         cell_num = results['cell_num']
         selection_coefficient = results['selection_coefficient']
         log_joint_prob = results['log_joint_prob']
-        Rhat_cellnum = fit.summary("cell_num")["summary"][0][9]
-        Rhat_selection = fit.summary("selection_coefficient")["summary"][0][9]
+        #Rhat_cellnum = fit.summary("cell_num")["summary"][0][9]
+        #Rhat_selection = fit.summary("selection_coefficient")["summary"][0][9]
         #
         # Fit the posterior probability, then output fitting parameters
         #
@@ -356,11 +357,12 @@ def get_posterior_info(inputdict, fit):
         posterior = mf.S_model_posterior(cell_num, selection_coefficient, log_joint_prob)
         
         posterior.maximum_llk_S_Model_GammaDist_Parameters()
-        outputdict.update ({ 'k': posterior.k, 'a': posterior.a, 'b': posterior.b,  
-                            'mean_s': posterior.mean_s, 'var_s': posterior.var_s,
-                      'log_norm': posterior.log_normalization_const, 
-                      'Rhat_cellnum': Rhat_cellnum, 'Rhat_selection': Rhat_selection})
+        #outputdict.update ({ 'k': posterior.k, 'a': posterior.a, 'b': posterior.b,  
+        #                    'mean_s': posterior.mean_s, 'var_s': posterior.var_s,
+        #              'log_norm': posterior.log_normalization_const, 
+        #              'Rhat_cellnum': Rhat_cellnum, 'Rhat_selection': Rhat_selection})
         
+        outputdict.update ({ 'k': posterior.k, 'a': posterior.a, 'b': posterior.b,  'mean_s': posterior.mean_s, 'var_s': posterior.var_s,'log_norm': posterior.log_normalization_const})
         log_prob_survive_cummulated = inputdict['log_prob_survive']+ np.log(results['prob_survive'][0]) 
         outputdict.update({'log_prob_survive_cummulated': log_prob_survive_cummulated})
         
@@ -435,31 +437,22 @@ def put_posterior_to_file(run_dict, done_queue, TASK_size, glob):
     #
     outfilename = 'posterior_'+lineage_name+'_'+model_name+f"_T{glob.current_timepoint}.txt"
     print(outfilename)
-    '''
-    if (model_name == MODEL_NAME['I']):
-        file = open(OutputFileDir+outfilename, 'w')
-        file.write("listID\tBCID\tTAG\tk\ttheta\tlog_normalization\tRhat_cellnum\n")
     
-        for i in range(TASK_size):
-            result = done_queue.get()
-            file.write(f"{result['listID']}\t{result['BCID']}\t{result['TAG']}\t{result['k']}\t{result['theta']}\t{result['log_norm']}\t{result['Rhat_cellnum']}\n")
-        file.close()
-    '''
     if (model_name == MODEL_NAME['N']):
         file = open(OutputFileDir+outfilename, 'w')
-        file.write("listID\t BCID\t TAG\t k\t theta\t log_normalization\t log_prob_survive_cummulated\t Rhat_cellnum\n")
+        file.write("listID\t BCID\t TAG\t k\t theta\t log_normalization\t log_prob_survive_cummulated\n")
     
         for i in range(TASK_size):
             result = done_queue.get()
-            file.write(f"{result['listID']}\t{result['BCID']}\t{result['TAG']}\t{result['k']}\t{result['theta']}\t{result['log_norm']}\t{result['log_prob_survive_cummulated']}\t{result['Rhat_cellnum']}\n")
+            file.write(f"{result['listID']}\t{result['BCID']}\t{result['TAG']}\t{result['k']}\t{result['theta']}\t{result['log_norm']}\t{result['log_prob_survive_cummulated']}\n")
         file.close()
     elif (model_name == MODEL_NAME['SN']) or (model_name == MODEL_NAME['SS']) :
         file = open(OutputFileDir+outfilename, 'w') 
-        file.write("listID\t  BCID\tTAG\t k\t a\t b\t s_mean\t s_var\t log_normalization \t log_prob_survive_cummulated\t Rhat_cellnum\t Rhat_selection\n")
+        file.write("listID\t  BCID\tTAG\t k\t a\t b\t s_mean\t s_var\t log_normalization \t log_prob_survive_cummulated\n")
     
         for i in range(TASK_size):
             result = done_queue.get()
-            file.write(f"{result['listID']}\t {result['BCID']}\t{result['TAG']}\t{result['k']}\t {result['a']}\t {result['b']}\t {result['mean_s']}\t {result['var_s']}\t {result['log_norm']}\t {result['log_prob_survive_cummulated']}\t{result['Rhat_cellnum']}\t {result['Rhat_selection']}\n")
+            file.write(f"{result['listID']}\t {result['BCID']}\t{result['TAG']}\t{result['k']}\t {result['a']}\t {result['b']}\t {result['mean_s']}\t {result['var_s']}\t {result['log_norm']}\t {result['log_prob_survive_cummulated']}\n")
         file.close()
     else:
         print(f"ERROR! function \"put_posterior_to_file\" could not identify the input model_name. model_name should be one of {MODEL_NAME}. ")
@@ -478,22 +471,18 @@ def put_posterior_to_file(run_dict, done_queue, TASK_size, glob):
 # =====================================================================================
 
 
-def readfile2lineage(lins, lineage_name, read_model_name, t):
-        
-    return_lins =[]
-    if read_model_name not in MODEL_NAME.values():
-        print(f"ERROR! function \"_read_past_info_for_lineage\" could not identify the input read_model_name = {read_model_name}. read_model_name should be one of {MODEL_NAME}. ")
-        lins =[]
-        
-    elif len(lins)>0:
+def readfile2lineage(lins, lineage_name, t):
+    
+    if len(lins)>0:
         
         # create a dictionary to store the bcid to lin-index:
         bcid_dict = {}
         for i in range(len(lins)):
             bcid_dict.update({lins[i].BCID:i})
         
+        read_model_name = MODEL_NAME['N']
         readfilename = 'posterior_'+lineage_name+'_'+read_model_name+f"_T{t}.txt"
-        if (read_model_name == MODEL_NAME['N']):    
+        if os.path.exists(OutputFileDir +readfilename):
             f = open(OutputFileDir +readfilename ,'r')
             # read the first line
             f.readline()
@@ -505,34 +494,70 @@ def readfile2lineage(lins, lineage_name, read_model_name, t):
                 
                 if BCID in bcid_dict:
                     i = bcid_dict[BCID]
+                    #
+                    # in the function get_posterior_info: N Model
+                    #  outputdict = {'listID': inputdict['listID'], 'BCID': BCID, 'TAG': inputdict['tag']}
+                    #  outputdict.update({ 'k': posterior.k, 'theta': posterior.theta, 'log_norm': posterior.log_normalization_const})
+                    #  outputdict.update({'log_prob_survive_cummulated': log_prob_survive_cummulated})
                     lins[i].nm.UPDATE_POST_PARM(k=float(read_line[3]), theta=float(read_line[4]), log_norm= float(read_line[5]), log_prob_survive=float(read_line[6]))
                     lins[i].TYPETAG = str(read_line[2])
-                    return_lins.append(lins[i])
                 read_line = f.readline()
+            f.close()
+        
+        for read_model_name in [MODEL_NAME['SS'], MODEL_NAME['SN']]:
+        #elif (read_model_name== MODEL_NAME['SS']) or  (read_model_name== MODEL_NAME['SN']):
+            readfilename = 'posterior_'+lineage_name+'_'+read_model_name+f"_T{t}.txt"
+            if os.path.exists(OutputFileDir +readfilename):
+                f = open(OutputFileDir +readfilename ,'r')
+                # read the first line
+                f.readline()
+                # read the second line
+                read_line = f.readline()
+                while read_line:
+                    read_line = read_line.split('\n')[0].split('\t')
+                    BCID = int(read_line[1])
+                    if BCID in bcid_dict.keys():
+                        i = bcid_dict[BCID]
+                        #
+                        # in the function get_posterior_info: SN & SS Model
+                        #  outputdict = {'listID': inputdict['listID'], 'BCID': BCID, 'TAG': inputdict['tag']}
+                        #  outputdict.update ({ 'k': posterior.k, 'a': posterior.a, 'b': posterior.b,  
+                        #         'mean_s': posterior.mean_s, 'var_s': posterior.var_s,'log_norm': posterior.log_normalization_const})
+                        #  outputdict.update({'log_prob_survive_cummulated': log_prob_survive_cummulated})
+                        lins[i].sm.UPDATE_POST_PARM(k=float(read_line[3]), a = float(read_line[4]), b = float(read_line[5]), 
+                                                        mean_s = float(read_line[6]), var_s = float(read_line[7]), 
+                                                        log_norm = float(read_line[8]), log_prob_survive=float(read_line[9]))
+                    read_line = f.readline()
+                f.close()
+    return lins
+
+
+def add_Bayefactor_2file(lins, lineage_name, t):
+    bcid_dict = {}
+    for i in range(len(lins)):
+        bcid_dict.update({lins[i].BCID:i})
+        
+    #if (read_model_name== MODEL_NAME['SS']) or  (read_model_name== MODEL_NAME['SN']):
+    for read_model_name in [MODEL_NAME['SS'], MODEL_NAME['SN']]:
+        readfilename = 'posterior_'+lineage_name+'_'+read_model_name+f"_T{t}.txt"
+        if os.path.exists(OutputFileDir +readfilename):
+            f = open(OutputFileDir +readfilename ,'r')
+            list_of_lines = f.readlines()
             f.close()
             
-        elif (read_model_name== MODEL_NAME['SS']) or  (read_model_name== MODEL_NAME['SN']):
-            f = open(OutputFileDir +readfilename ,'r')
-            # read the first line
-            f.readline()
-            # read the second line
-            read_line = f.readline()
-            while read_line:
-                read_line = read_line.split('\n')[0].split('\t')
-                BCID = int(read_line[1])
+            list_of_lines[0] = list_of_lines[0].split('\n')[0] + '\t log10 Bayes Factor\n'
+            
+            for j in range(1, len(list_of_lines)):
+                read_line = list_of_lines[j].split('\n')[0]
+                BCID = int(read_line.split('\t')[1])
                 if BCID in bcid_dict.keys():
                     i = bcid_dict[BCID]
-                    lins[i].sm.UPDATE_POST_PARM(k=float(read_line[3]), a = float(read_line[4]), b = float(read_line[5]), 
-                                                    mean_s = float(read_line[6]), var_s = float(read_line[7]), 
-                                                    log_norm = float(read_line[8]), log_prob_survive=float(read_line[9]))
-                    return_lins.append(lins[i])
-                read_line = f.readline()
+                    log10_BF = lins[i].log10_BayesFactor()
+                    list_of_lines[j] = read_line + '\t' + str(log10_BF) + '\n'
+            
+            f = open(OutputFileDir+readfilename ,'w')
+            f.writelines(list_of_lines)
             f.close()
-    return return_lins
-
-
-
-
 
 
 

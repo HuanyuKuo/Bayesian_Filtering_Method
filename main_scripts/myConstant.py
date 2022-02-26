@@ -42,7 +42,7 @@ smax = float(2.5) # 30% * Log2(D)
 smin = float(-2.5)
 NUMBER_LINEAGE_MLE = 3000# Number of lineage in likelihood function (MLE for inferring mean-fintess)
 rc_default = 5
-log10BF_threshold = 1.
+log10BF_threshold = 0.
 
 
 
