@@ -486,29 +486,13 @@ def readfile2lineage(lins, lineage_name, read_model_name, t):
         lins =[]
         
     elif len(lins)>0:
-        BCID_list = np.asarray( [lins[i].BCID for i in range(len(lins))])
-        checklist = [1 for i in range(len(lins))]
+        
+        # create a dictionary to store the bcid to lin-index:
+        bcid_dict = {}
+        for i in range(len(lins)):
+            bcid_dict.update({lins[i].BCID:i})
         
         readfilename = 'posterior_'+lineage_name+'_'+read_model_name+f"_T{t}.txt"
-        '''
-        if (read_model_name == MODEL_NAME['I']):    
-            f = open(OutputFileDir +readfilename ,'r')
-            # read the first line
-            f.readline()
-            # read the second line
-            read_line = f.readline()
-            while read_line:
-                read_line = read_line.split('\n')[0].split('\t')
-                BCID = int(read_line[1])
-                idx = np.where(BCID_list==BCID)[0]
-                if idx.size >0:
-                    for i in idx:
-                        checklist[i] = 0
-                        lins[i].INITIALIZE_POST_PARM(k=float(read_line[3]), theta=float(read_line[4]))
-                        lins[i].TYPETAG = str(read_line[2])
-                read_line = f.readline()
-            f.close()
-        '''    
         if (read_model_name == MODEL_NAME['N']):    
             f = open(OutputFileDir +readfilename ,'r')
             # read the first line
@@ -518,13 +502,12 @@ def readfile2lineage(lins, lineage_name, read_model_name, t):
             while read_line:
                 read_line = read_line.split('\n')[0].split('\t')
                 BCID = int(read_line[1])
-                idx = np.where(BCID_list==BCID)[0]
-                if idx.size >0:
-                    for i in idx:
-                        checklist[i] = 0
-                        lins[i].nm.UPDATE_POST_PARM(k=float(read_line[3]), theta=float(read_line[4]), 
-                                                    log_norm= float(read_line[5]), log_prob_survive=float(read_line[6]))
-                        lins[i].TYPETAG = str(read_line[2])
+                
+                if BCID in bcid_dict:
+                    i = bcid_dict[BCID]
+                    lins[i].nm.UPDATE_POST_PARM(k=float(read_line[3]), theta=float(read_line[4]), log_norm= float(read_line[5]), log_prob_survive=float(read_line[6]))
+                    lins[i].TYPETAG = str(read_line[2])
+                    return_lins.append(lins[i])
                 read_line = f.readline()
             f.close()
             
@@ -537,27 +520,14 @@ def readfile2lineage(lins, lineage_name, read_model_name, t):
             while read_line:
                 read_line = read_line.split('\n')[0].split('\t')
                 BCID = int(read_line[1])
-                idx = np.where(BCID_list==BCID)[0]
-                if idx.size >0:
-                    for i in idx:
-                        checklist[i] = 0
-                        lins[i].sm.UPDATE_POST_PARM(k=float(read_line[3]), a = float(read_line[4]), b = float(read_line[5]), 
+                if BCID in bcid_dict.keys():
+                    i = bcid_dict[BCID]
+                    lins[i].sm.UPDATE_POST_PARM(k=float(read_line[3]), a = float(read_line[4]), b = float(read_line[5]), 
                                                     mean_s = float(read_line[6]), var_s = float(read_line[7]), 
                                                     log_norm = float(read_line[8]), log_prob_survive=float(read_line[9]))
-                        #lins[idx].TYPETAG = str(read_line[2])
+                    return_lins.append(lins[i])
                 read_line = f.readline()
             f.close()
-        
-        if np.sum(np.asarray(checklist)) > 0: # Change on 10/14/2020
-            return_lins = []
-            for i in range(len(checklist)):
-                if checklist[i]:
-                    print(f"Warning! Didn't find matched barcode index {lins[i].BCID} in the file {readfilename} for lineage {i}.")
-                else:
-                    return_lins.append(lins[i])
-        else:
-            return_lins = lins
-            #lins =[]
     return return_lins
 
 
