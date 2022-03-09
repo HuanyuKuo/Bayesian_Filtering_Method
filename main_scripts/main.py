@@ -14,7 +14,7 @@ import numpy as np
 import myConstant as mc
 import myReadfile as mr
 from myVariables import (Constant, Global, Lineage)
-from my_model_MCMCmultiprocessing import run_model_MCMCmultiprocessing, readfile2lineage, add_Bayefactor_2file
+from my_model_MCMCmultiprocessing import run_model_MCMCmultiprocessing, create_lineage_list_by_pastTag, add_Bayefactor_2file
 
 
 MODEL_NAME = mc.MODEL_NAME
@@ -22,70 +22,6 @@ LINEAGE_TAG = mc.LINEAGE_TAG
 OutputFileDir = mc.OutputFileDir
 NUMBER_RAND_NEUTRAL = mc.NUMBER_LINEAGE_MLE
 
-
-#
-# Function creates the tag list of lineage from past time point
-#   
-def create_lineage_list_by_pastTag(lins, current_time, lineage_info, const):
-    
-    last_time = current_time -1
-    
-    # Update the reads value to current time
-    for lin in lins:
-        lin.set_reads(last_time=last_time)
-        
-    #
-    # Read The PAST infromation from file and read PastTAG of lineage
-    #
-    if last_time ==0:
-        for lin in lins:
-            mu_r = float((0.001+lin.r0))
-            k = mu_r/(1+mu_r*const.eps)
-            theta = (1+mu_r*const.eps)/const.Rt[0]*const.Nt[0]
-            #lin.nm.UPDATE_POST_PARM(k=lin.r0+0.001, theta=float(const.Nt[0]/const.Rt[0]),  log_norm= 0., log_prob_survive=0.)
-            lin.nm.UPDATE_POST_PARM(k=k, theta=theta, log_norm= 0., log_prob_survive=0.)
-            
-            lin._init_TAG()
-            
-    elif last_time >0:
-        lins_survive = []
-        for lin in lins:
-            if lin.T_END > current_time:
-                lins_survive.append(lin)
-                
-        lins = lins_survive
-        lins = readfile2lineage(lins, lineage_info['lineage_name'], last_time)
-        
-        add_Bayefactor_2file(lins, lineage_info['lineage_name'], last_time)
-    
-    '''
-    # Note that the tag is still the past tag
-    lins_UNK = []
-    lins_NEU = []
-    lins_ADP = []
-    
-    for i in range(len(lins)):
-        
-        typetag = lins[i].TYPETAG
-        
-        if typetag == LINEAGE_TAG['UNK']:
-            lins_UNK.append(lins[i])
-        elif typetag == LINEAGE_TAG['NEU']:
-            lins_NEU.append(lins[i])
-        elif typetag == LINEAGE_TAG['ADP']:
-            lins_ADP.append(lins[i])
-    
-    if last_time >0:
-        # Based on Tag, read SModel from different file
-        lins_NEU = readfile2lineage(lins_NEU, lineage_info['lineage_name'], MODEL_NAME['SN'], last_time)
-        lins_ADP = readfile2lineage(lins_ADP, lineage_info['lineage_name'], MODEL_NAME['SS'], last_time)
-        
-    lins 
-        # Update Bayes Factor information for NEU and ADP group
-        add_Bayefactor_2file(lins_UNK, lineage_info['lineage_name'], MODEL_NAME['SN'], last_time)
-        add_Bayefactor_2file(lins_ADP, lineage_info['lineage_name'], MODEL_NAME['SS'], last_time)
-    '''
-    return lins
 
 #
 # Function randomly chooses "small neutral lineages" and "adpative lineages" from lins
@@ -130,6 +66,33 @@ def select_random_lineages(lins):
     lins_ = [ lins_choice[i] for i in list(rand_index)]
     
     return lins_
+
+#
+# Function randomly chooses lineages from lins
+#   
+def select_random_lineages_v2(lins):
+    
+    lins_choice =[]
+    prob_choice = []
+    
+    for lin in lins:
+        if lin.TYPETAG == LINEAGE_TAG['ADP']:
+            lins_choice.append(lin)
+            log10bf = lin.log10_BayesFactor()
+            p = min(1, log10bf)
+            prob_choice.append(p)
+            
+        elif lin.r0 > 0:
+            lins_choice.append(lin)
+            prob_choice.append(0.5)
+    
+    length = min(NUMBER_RAND_NEUTRAL,len(lins_choice))
+    prob_choice = np.asarray(prob_choice)/sum(prob_choice)
+    rand_index = np.random.choice(a=len(lins_choice), size=length, replace=False, p=prob_choice)
+    lins_ = [ lins_choice[i] for i in list(rand_index)]
+    
+    return lins_
+
 #
 # Function classifies lineage to different list based on the TAG
 #   
@@ -171,24 +134,23 @@ def run_lineages(lins, start_time, end_time, const, lineage_info):
                 # READ LINEAGE FROM THE PAST FILES
                 lins = create_lineage_list_by_pastTag(lins, current_time, lineage_info, const)
                 
+                add_Bayefactor_2file(lins, lineage_info['lineage_name'], current_time-1)
                 # CLASSIFY LINEAGES
                 lins_UNK, lins_NEU, lins_ADP = classify_lineage_by_BayesFactor(lins, current_time, lineage_info)
                 
                 
-                
                 # UPDATE GLOBAL VARIABLE
                 # step1: Choose random lineage for liklihood function
+                #lins_RAND = select_random_lineages(lins_UNK + lins_NEU+ lins_ADP)
+                lins_RAND = select_random_lineages_v2(lins_UNK + lins_NEU + lins_ADP) 
+                '''
                 if current_time == 1:
                     lins_RAND = select_random_lineages(lins_UNK + lins_NEU+ lins_ADP)
                 else:
                     lins_RAND = select_small_lineages(lins_UNK + lins_NEU + lins_ADP, const.Rt[current_time-1] ) 
+                '''
                 # step2: Maximum likelihood estmiate 
-                if current_time <= 3:
-                    glob.UPDATE_GLOBAL(current_time, const, lineage_info, lins_RAND, '2d') # 2d: optimize meanfitness and epsilon
-                else:
-                    #glob.UPDATE_GLOBAL(current_time, const, lineage_info, lins_RAND, '1d') # 1d: optimize meanfitness
-                    glob.UPDATE_GLOBAL(current_time, const, lineage_info, lins_RAND, '2d')
-                
+                glob.UPDATE_GLOBAL(current_time, const, lineage_info, lins_RAND, '2d')
                 
                 # COMPUTE POSTERIOR BY MULTIPROCESSING MCMC
                 # run NModel for all lineages
@@ -220,16 +182,25 @@ if __name__ == '__main__':
     # Set your filename and case_name
     # ################################## 
     
-    # FileName of Barcode Count data
-    datafilename = 'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
+    #
+    # 1. FileName of Barcode Count data
+    # 
+    #datafilename = 'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
     #datafilename = '41586_2015_BFnature14279_MOESM90_ESM_cycle' + '.txt'
-    # Name of Run Case
-    case_name = 'Simulation_20222013_Population1' 
+    datafilename = 'Data_BarcodeCount_simuMEE_20220226' + '.txt'
+    
+    #
+    # 2. Name of Run Case
+    #
+    
+    case_name = 'Simulation_20220226_NL=10e5__testRandLintoFitGlob' 
+    #case_name = 'Simulation_20220226_NL=10e5__testRandLintoFitGlob' 
     #case_name = 'nature2015_E1'
     
     #
     # create lineage & constant
     lins, totalread, cycles = mr.my_readfile(datafilename)
+    
     const = Constant(totalread, cycles)
     for t in range(1, const.T):
         const.Ct[t] = cycles[t-1]
@@ -242,5 +213,5 @@ if __name__ == '__main__':
     
     #
     # output result
-    
-    
+    mr.output_global_parameters_BFM(lineage_info,const)
+    meanfitness_Bayes_cycle, epsilon_Bayes, t_arr_cycle = mr.read_global_parameters_BFM(lineage_info)

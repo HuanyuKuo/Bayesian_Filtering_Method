@@ -560,4 +560,39 @@ def add_Bayefactor_2file(lins, lineage_name, t):
             f.close()
 
 
+#
+# Function creates the tag list of lineage from past time point
+#   
+def create_lineage_list_by_pastTag(lins, current_time, lineage_info, const):
+    
+    last_time = current_time -1
+    
+    # Update the reads value to current time
+    for lin in lins:
+        lin.set_reads(last_time=last_time)
+        
+    #
+    # Read The PAST infromation from file and read PastTAG of lineage
+    #
+    if last_time ==0:
+        for lin in lins:
+            mu_r = float((0.001+lin.r0))
+            k = mu_r/(1+mu_r*const.eps)
+            theta = (1+mu_r*const.eps)/const.Rt[0]*const.Nt[0]
+            #lin.nm.UPDATE_POST_PARM(k=lin.r0+0.001, theta=float(const.Nt[0]/const.Rt[0]),  log_norm= 0., log_prob_survive=0.)
+            lin.nm.UPDATE_POST_PARM(k=k, theta=theta, log_norm= 0., log_prob_survive=0.)
+            
+            lin._init_TAG()
+            
+    elif last_time >0:
+        lins_survive = []
+        for lin in lins:
+            if lin.T_END > current_time:
+                lins_survive.append(lin)
+                
+        lins = lins_survive
+        lins = readfile2lineage(lins, lineage_info['lineage_name'], last_time)
+        
+        
+    return lins
 
