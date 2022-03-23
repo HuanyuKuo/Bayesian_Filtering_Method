@@ -11,7 +11,8 @@ import myReadfile as mr
 
 from matplotlib import pyplot as plt
 import numpy as np
-
+import scipy.stats
+from scipy.stats import norm
 def read_meanfitness_BTM(lineage_info, const):
     eps_arr=[]
     sbar_arr=[]
@@ -87,44 +88,44 @@ def read_selection_Simulation(filedirname):
     f.close()
     return s_arr_Simulation
 
+def mixture_posterior_function(s, mean_arr, std_arr):
+    n = len(mean_arr)
+    p = 0
+    for i in range(n):
+        p += norm.pdf(s,loc=mean_arr[i],scale=std_arr[i])
+    p/= n
+    return p
 
 if __name__ == '__main__':
     
-    datafilename = 'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
+    #datafilename = 'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
     #datafilename = '41586_2015_BFnature14279_MOESM90_ESM_cycle_downsample'+ '.txt'  
+    
+    datafilename = 'Data_BarcodeCount_simuMEE_20220226' + '.txt'
     lins, totalread, cycles = mr.my_readfile(datafilename)
     const = Constant(totalread, cycles)
     
-    case_name = 'Simulation_20222013_Population1' 
+    #case_name = 'Simulation_20222013_Population1' 
     #case_name = 'nature2015_Rep1'#'Simulation_20222013_Population1' 
+    #case_name = 'Simulation_20220226_NL=10e5' 
+    case_name = 'Simulation_20220226_NL=10e5__testRandLintoFitGlob' 
     lineage_info =  {'lineage_name': case_name}
     
-    
+    simu_name = 'simuMEE_20220226'
     # ##################################################
     #
     # Collect output from Bayesian Method and Save results
     #
     # ###################################################
-    eps_Bayes, meanfitness_Bayes = read_meanfitness_BTM(lineage_info, const)
-    ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time = read_selection_Bayes(lins, const, lineage_info)
+    #eps_Bayes, meanfitness_Bayes = read_meanfitness_BTM(lineage_info, const)
+    #ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time = read_selection_Bayes(lins, const, lineage_info)
     
     
-    _t_Bayes = [sum(const.Ct[1:i]) for i in range(len(const.Ct))]
-    t_Bayes = [(_t_Bayes[i]+_t_Bayes[i+1])/2 for i in range(len(_t_Bayes)-1)]
+    critical_counts = 2
+    critical_log10_BF = 0.3
     
-    # Output Mean-fitness file
-    f = open(mc.OutputFileDir + 'Bayesian_global_parameters_'+lineage_info['lineage_name']+'.txt','w')
-    f.write('Time (cycle)\tMean-fitness(1/cycle)\tEpsilon\n')
-    for i in range(len(t_Bayes)):
-        f.write(str(t_Bayes[i])+'\t'+str(meanfitness_Bayes[i])+'\t'+str(eps_Bayes[i])+'\n')
-    f.close()
-    # Output Epsilon file
-    f = open(mc.OutputFileDir + 'Bayesian_ADP_selection_coefficient_'+lineage_info['lineage_name']+'.txt','w')
-    f.write('Barcode Index \t selection coefficient mean (1/cycle) \t selection coefficient std \t collect time (cycle)\t counts \n')
-    for i in range(len(ADP_BCID_Bayes)):
-        t_index = ADP_s_time[i]
-        f.write(str(ADP_BCID_Bayes[i])+'\t'+str(ADP_s_mean_Bayes[i])+'\t'+str(ADP_s_std_Bayes[i])+'\t'+str(_t_Bayes[t_index])+ '\t'+ str(ADP_counts[i])+'\n')
-    f.close()
+    ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time = mr.read_selection_Bayes(lineage_info, datafilename, critical_log10_BF, critical_counts)
+    
     
     
     
@@ -140,13 +141,13 @@ if __name__ == '__main__':
     # Plot meanfitness and epsilon
     #
     if FLAG_PLOT_SIMULATION:
-        simu_name = 'simuMEE_20220213'
+        
         meanfitness_Simulation = read_meanfitness_Simulation('../simulation_MEE/'+'simulation_meanfitness_'+simu_name+ '.txt')
         t_simulation = np.arange(0,len(meanfitness_Simulation),1)
    
     
     
-    
+    meanfitness_Bayes, eps_Bayes, t_Bayes = mr.read_global_parameters_BFM(lineage_info)
     plt.figure()
     plt.plot(t_Bayes, meanfitness_Bayes, 'bo-', label='Bayes')
     if FLAG_PLOT_SIMULATION:
@@ -154,7 +155,7 @@ if __name__ == '__main__':
     plt.legend()
     plt.xlabel('time (cycle)')
     plt.title('Meanfitness(1/cycle)')
-    plt.savefig(mc.OutputFileDir+'meanfitness_trajectory_Bayes.png',dpi=200)
+    plt.savefig(mc.OutputFileDir+case_name+'_meanfitness_trajectory_Bayes'+'.png',dpi=200)
     
     plt.figure()
     plt.plot(t_Bayes, eps_Bayes, 'bo-',label='Bayes')
@@ -163,26 +164,37 @@ if __name__ == '__main__':
     plt.legend()
     plt.xlabel('time (cycle)')
     plt.title('Systematic Error Epsilon')
-    plt.savefig(mc.OutputFileDir +'Epsilon_trajectory_Bayes.png',dpi=200)
+    plt.savefig(mc.OutputFileDir +case_name+'_Epsilon_trajectory_Bayes'+'.png',dpi=200)
     
     #
     # Plot DFE
     #
     bw= 0.06
     plt.figure()
+    bw2 = 0.005
+    s_arr_DFE = np.arange(0,1,0.01)
+    DFE_Bayes =[ mixture_posterior_function(s,ADP_s_mean_Bayes,ADP_s_std_Bayes)*len(ADP_s_mean_Bayes)*bw for s in s_arr_DFE]
+    plt.plot(s_arr_DFE, DFE_Bayes, '-', color='tab:blue', label='Posterior Mixture (n={:d})'.format(len(ADP_s_mean_Bayes)))
     plt.hist(ADP_s_mean_Bayes, color='tab:blue', bins=int((max(ADP_s_mean_Bayes)-min(ADP_s_mean_Bayes))/bw), label='Bayes (n={:d})'.format(len(ADP_s_mean_Bayes)),alpha=0.4)
     if FLAG_PLOT_SIMULATION:
         s_Simulation = read_selection_Simulation('../simulation_MEE/' + 'simulation_selection_coefficient_'+simu_name+'.txt')
         s_Simulation = np.asarray(s_Simulation)
         ADP_BCID_Simulation = np.where(s_Simulation>0)[0]
+        ADP_BCID_Simulation_survive = []
+        for bcid in ADP_BCID_Simulation:
+            if lins[bcid].T_END > 2:
+                ADP_BCID_Simulation_survive.append(bcid)
+        ADP_BCID_Simulation = ADP_BCID_Simulation_survive
+        
         s_Simulation_adpative = s_Simulation[ADP_BCID_Simulation]
         
-        plt.hist(s_Simulation_adpative, color='black', bins=int((max(s_Simulation_adpative)-min(s_Simulation_adpative))/bw), label='Simulation (n={:d})'.format(len(s_Simulation_adpative)),alpha=0.4)
-    
+        plt.hist(s_Simulation_adpative, color='grey', bins=int((max(s_Simulation_adpative)-min(s_Simulation_adpative))/bw), label='Simulation (n={:d})'.format(len(s_Simulation_adpative)),alpha=0.4)
+
+        
     plt.legend()
     plt.xlabel('selection coefficient (1/cycle)')
     plt.title('DFE')
-    plt.savefig(mc.OutputFileDir + 'DFE_Bayes.png',dpi=200)
+    plt.savefig(mc.OutputFileDir +case_name +'_DFE_Bayes_'+'.png',dpi=200)
     
 
     if FLAG_PLOT_SIMULATION:
@@ -199,25 +211,29 @@ if __name__ == '__main__':
         TP_s2 = np.asarray(ADP_s_mean_Bayes)[TP_idx2]
         TP_s2_std = np.asarray(ADP_s_std_Bayes)[TP_idx2]*2
         plt.figure()
-        plt.errorbar(x=TP_s1, y=TP_s2, yerr=TP_s2_std, fmt='o', ecolor=None,alpha=0.7,label='True positive {:d}'.format(len(TP_s2))+'/{:d}'.format(len(ADP_BCID_Bayes)))
+        plt.errorbar(x=TP_s1, y=TP_s2, yerr=TP_s2_std, fmt='.', elinewidth=0.1, ecolor=None,alpha=0.7,label='True positive {:d}'.format(len(TP_s2))+'/{:d}'.format(len(ADP_BCID_Bayes)))
+        slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(TP_s1, TP_s2)
         
         
         TP_idx2 = [ADP_BCID_Bayes.index(bcid) for bcid in false_positive_BCID] 
         TP_s2 = np.asarray(ADP_s_mean_Bayes)[TP_idx2]
         TP_s2_std = np.asarray(ADP_s_std_Bayes)[TP_idx2]*2
         x = [0 for _ in range(len(TP_s2))]
-        plt.errorbar(x=x, y=TP_s2, yerr=TP_s2_std, fmt='o', ecolor=None,alpha=0.7,label='False positive {:d}'.format(len(TP_s2)))
+        #plt.errorbar(x=x, y=TP_s2, yerr=TP_s2_std, fmt='.', ecolor=None,alpha=0.7,label='False positive {:d}'.format(len(TP_s2)))
+        plt.plot(x, TP_s2, '.', alpha=0.7, label='False positive {:d}'.format(len(TP_s2)))
         
         TP_idx1 = [list(ADP_BCID_Simulation).index(bcid) for bcid in false_negative_BCID] 
         TP_s1= s_Simulation_adpative[TP_idx1]
         y = [0 for _ in TP_s1]
-        plt.plot(TP_s1, y, 'o',alpha=0.7, label='False negative {:d}'.format(len(TP_s1)))
-        plt.title('Selection Coefficient')
+        plt.plot(TP_s1, y, '.',alpha=0.7, label='False negative {:d}'.format(len(TP_s1)))
+        plt.title('Selection Coefficient (R={:.2f})'.format(r_value))
         plt.xlabel('Simulation S (1/cycle)')
         plt.ylabel('Bayes S (1/cycle)')
         plt.legend()
         plt.plot([0,1.1 ],[0,1.1],'k--')
-        plt.savefig(mc.OutputFileDir + 'Selection_Coefficient_Bayes.png',dpi=200)
+        plt.savefig(mc.OutputFileDir + case_name+ '+Selection_Coefficient_Bayes_log10BF='+str(critical_log10_BF) +'_countT='+str(critical_counts) +'.png',dpi=200)
+        
+        
         #
         # Plot lineage trajectory for true_positive barcode
         #
@@ -240,11 +256,11 @@ if __name__ == '__main__':
                     col = 'r'
                     count_nsuv+= 1
                 logfreq = np.ma.log10(freqs)
-                plt.plot(t_data, logfreq,'-', color=col, lw=0.3)
+                plt.plot(t_data, logfreq,'-', color=col, lw=0.2, alpha=0.5)
         plt.xlabel('time (cycle)')
         plt.ylabel('log10 barcode freq')
         plt.title('True positive lineages ({:d} survive (black),'.format(count_suv)+' {:d} non-survive (red))'.format(count_nsuv))
-        plt.savefig(mc.OutputFileDir + 'True_positive_lineages.png',dpi=200)
+        plt.savefig(mc.OutputFileDir +case_name+ '_True_positive_lineages.png',dpi=200)
         #
         # Plot lineage trajectory for false_negative barcode
         #
@@ -265,9 +281,9 @@ if __name__ == '__main__':
                     col = 'r'
                     count_nsuv +=1
                 logfreq = np.ma.log10(freqs)
-                plt.plot(t_data, logfreq,'-', color=col, lw=0.3)
+                plt.plot(t_data, logfreq,'-', color=col, lw=0.2, alpha=0.5)
         plt.xlabel('time (cycle)')
         plt.ylabel('log10 barcode freq')
         plt.title('False negative lineages ({:d} survive (black),'.format(count_suv)+' {:d} non-survive (red))'.format(count_nsuv))
-        plt.savefig(mc.OutputFileDir + 'False_negative_lineages.png',dpi=200)
-    
+        plt.savefig(mc.OutputFileDir + case_name+'_False_negative_lineages.png',dpi=200)
+        
