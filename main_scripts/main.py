@@ -37,7 +37,10 @@ def select_small_lineages(lins, R):
     for lin in lins:
         if lin.TYPETAG == LINEAGE_TAG['ADP']:
             lins_choice.append(lin)
-            prob_choice.append(0.5)
+            log10bf = lin.log10_BayesFactor()
+            p = min(1, log10bf)
+            prob_choice.append(p)
+            #prob_choice.append(0.5)
             
         elif (lin.r0 > 0) and (lin.r0 < rc):
             lins_choice.append(lin)
@@ -142,13 +145,13 @@ def run_lineages(lins, start_time, end_time, const, lineage_info):
                 # UPDATE GLOBAL VARIABLE
                 # step1: Choose random lineage for liklihood function
                 #lins_RAND = select_random_lineages(lins_UNK + lins_NEU+ lins_ADP)
-                lins_RAND = select_random_lineages_v2(lins_UNK + lins_NEU + lins_ADP) 
-                '''
+                #lins_RAND = select_random_lineages_v2(lins_UNK + lins_NEU + lins_ADP) 
+                
                 if current_time == 1:
                     lins_RAND = select_random_lineages(lins_UNK + lins_NEU+ lins_ADP)
                 else:
                     lins_RAND = select_small_lineages(lins_UNK + lins_NEU + lins_ADP, const.Rt[current_time-1] ) 
-                '''
+                
                 # step2: Maximum likelihood estmiate 
                 glob.UPDATE_GLOBAL(current_time, const, lineage_info, lins_RAND, '2d')
                 
