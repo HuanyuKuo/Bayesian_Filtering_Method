@@ -188,18 +188,18 @@ if __name__ == '__main__':
     #
     # 1. FileName of Barcode Count data
     # 
-    #datafilename = 'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
+    datafilename = 'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
     #datafilename = '41586_2015_BFnature14279_MOESM90_ESM_cycle' + '.txt'
-    datafilename = 'Data_BarcodeCount_simuMEE_20220226' + '.txt'
+    #datafilename = 'Data_BarcodeCount_simuMEE_20220226' + '.txt'
     
     #
     # 2. Name of Run Case
     #
     
-    case_name = 'Simulation_20220226_NL=10e5__testRandLintoFitGlob' 
+    #case_name = 'Simulation_20220226_NL=10e5__testRandLintoFitGlob' 
     #case_name = 'Simulation_20220226_NL=10e5__testRandLintoFitGlob' 
     #case_name = 'nature2015_E1'
-    
+    case_name = 'Simulation_20220213'
     #
     # create lineage & constant
     lins, totalread, cycles = mr.my_readfile(datafilename)
@@ -215,6 +215,10 @@ if __name__ == '__main__':
     run_lineages(lins, start_time, end_time, const, lineage_info)
     
     #
-    # output result
+    # output results
     mr.output_global_parameters_BFM(lineage_info,const)
     meanfitness_Bayes_cycle, epsilon_Bayes, t_arr_cycle = mr.read_global_parameters_BFM(lineage_info)
+    
+    critical_BF = 2
+    critical_counts = 2
+    mr.output_selection_Bayes(lineage_info, datafilename, critical_BF, critical_counts)

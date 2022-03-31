@@ -27,9 +27,9 @@ NUMBER_OF_PROCESSES = 16 # Multi-processing
 #
 # EXPERIMENTAL PARAMETERS
 #
-D = float(200) # dilution factor
+D = float(100) # dilution factor
 cycle = float(2) # number of cycle between data
-N = float(2*10**8) # Carrying capacity: total number of cells in the flask before dilution (after growing)
+N = float(2*10**7) # Carrying capacity: total number of cells in the flask before dilution (after growing)
 epsilon = float(0.01) # initial value of epsilon, default
 # Note that bottleneck size Nb = N/D
 
