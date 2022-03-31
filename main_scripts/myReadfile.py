@@ -10,6 +10,7 @@ from myVariables import (Constant, Global, Lineage)
 from my_model_MCMCmultiprocessing import  create_lineage_list_by_pastTag
 import numpy as np
 from matplotlib import pyplot as plt
+import os.path
 #
 # read input Barcode count data
 def my_readfile(filename):
@@ -94,7 +95,7 @@ def read_global_parameters_BFM(lineage_info):
         line = f.readline()
     f.close()
     return meanfitness_Bayes_cycle, epsilon_Bayes, t_arr_cycle
-
+'''
 #
 # 
 def read_selection_Bayes(lineage_info, datafilename, critical_log10_BF, critical_counts):
@@ -138,6 +139,180 @@ def read_selection_Bayes(lineage_info, datafilename, critical_log10_BF, critical
     ADP_counts = [counts[i] for i in index]
     ADP_s_time = [ADP_s_time[i] for i in index]
     return ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time
+'''
+
+#
+# output selection coefficient
+def output_selection_Bayes(lineage_info, datafilename, critical_BF, critical_counts):
+    
+    ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time = read_selection_Bayes_v2(lineage_info, datafilename, critical_BF, critical_counts)
+    
+    case_name = lineage_info['lineage_name']
+    f = open(mc.OutputFileDir  + 'S_Bayes_v2_'+case_name+f'_count={critical_counts}'+f'_BFthreshold={critical_BF}.txt','w')
+    f.write('ADP_BCID_Bayes\tADP_s_mean_Bayes\tADP_s_std_Bayes\tADP_counts\tADP_s_time\n')
+    for i in range(len(ADP_BCID_Bayes)):
+        f.write(str(ADP_BCID_Bayes[i])+'\t')
+        f.write(str(ADP_s_mean_Bayes[i])+'\t')
+        f.write(str(ADP_s_std_Bayes[i])+'\t')
+        f.write(str(ADP_counts[i])+'\t')
+        f.write(str(ADP_s_time[i])+'\n')
+    f.close()
+
+def get_tmp_s_from_BayesFiles(lineage_info, t):
+    
+    MODEL_NAME = mc.MODEL_NAME
+    OutputFileDir = mc.OutputFileDir
+    lineage_name = lineage_info['lineage_name']
+    
+    tmp_bcids_SS = []
+    tmp_s_mean_SS = []
+    tmp_s_var_SS = []
+    tmp_log10bf_SS = []
+    readfilename = 'posterior_'+lineage_name+'_'+MODEL_NAME['SS']+f"_T{t}.txt"
+    print(readfilename)
+    if os.path.exists(OutputFileDir +readfilename) is False:
+        print('No file '+OutputFileDir +readfilename+'\n')
+    else:
+        f = open(OutputFileDir +readfilename ,'r')
+        a = f.readlines()
+        f.close()
+        for i in range(1, len(a)):
+            b = a[i].split('\n')[0].split('\t')
+            if  (float(b[6]) >0) and (len(b)>10) :
+                tmp_bcids_SS.append(  int(b[1]))
+                tmp_s_mean_SS.append( float(b[6]))
+                tmp_s_var_SS.append( float(b[7]))
+                tmp_log10bf_SS.append( float(b[10]))
+    tmp_bcids_SN = []
+    tmp_s_mean_SN = []
+    tmp_s_var_SN = []
+    tmp_log10bf_SN = []
+    readfilename = 'posterior_'+lineage_name+'_'+MODEL_NAME['SN']+f"_T{t}.txt"
+    print(readfilename)
+    if os.path.exists(OutputFileDir +readfilename) is False:
+        print('No file '+OutputFileDir +readfilename+'\n')
+    else:
+        f = open(OutputFileDir +readfilename ,'r')
+        a = f.readlines()
+        f.close()
+        for i in range(1, len(a)):
+            b = a[i].split('\n')[0].split('\t')
+            if  (float(b[6]) >0) and (len(b)>10) :
+                tmp_bcids_SN.append(  int(b[1]))
+                tmp_s_mean_SN.append( float(b[6]))
+                tmp_s_var_SN.append( float(b[7]))
+                tmp_log10bf_SN.append( float(b[10]))
+    return tmp_bcids_SS, tmp_s_mean_SS, tmp_s_var_SS, tmp_log10bf_SS, tmp_bcids_SN, tmp_s_mean_SN, tmp_s_var_SN, tmp_log10bf_SN
+
+def read_selection_Bayes_v2(lineage_info, datafilename, critical_BF, critical_counts):
+    
+    ADP_BCID_Bayes = []
+    ADP_s_mean_Bayes= []
+    ADP_s_std_Bayes= []
+    ADP_s_time=[]
+    #lins = []
+    counts = []
+    
+    critical_log10_BF = np.log10(critical_BF)
+    
+    lins, totalread, cycles = my_readfile(datafilename)
+    
+    total_timepoint = len(totalread)
+    
+    tend = total_timepoint -1 
+    t = tend
+    
+    MODEL_NAME = mc.MODEL_NAME
+    OutputFileDir = mc.OutputFileDir
+    lineage_name = lineage_info['lineage_name']
+    
+    tmp_bcids_SS = []
+    tmp_s_mean_SS = []
+    tmp_s_var_SS = []
+    readfilename = 'posterior_'+lineage_name+'_'+MODEL_NAME['SS']+f"_T{t}.txt"
+    if os.path.exists(OutputFileDir +readfilename) is False:
+        print('No file '+OutputFileDir +readfilename+'\n')
+    else:
+        f = open(OutputFileDir +readfilename ,'r')
+        a = f.readlines()
+        f.close()
+        for i in range(1, len(a)):
+            b = a[i].split('\n')[0].split('\t')
+            if  float(b[6]) >0:
+                tmp_bcids_SS.append(  int(b[1]))
+                tmp_s_mean_SS.append( float(b[6]))
+                tmp_s_var_SS.append( float(b[7]))
+                
+    for i in range(len(tmp_bcids_SS)):
+        if tmp_bcids_SS[i] > 0:
+            bcid = tmp_bcids_SS[i]
+            s_mean = tmp_s_mean_SS[i]
+            s_std = np.sqrt(tmp_s_var_SS[i])
+            
+            ADP_BCID_Bayes.append(bcid)
+            ADP_s_mean_Bayes.append(s_mean)
+            ADP_s_std_Bayes.append(s_std)
+            ADP_s_time.append(t)
+            counts.append(1.)
+        
+    t_arr = [t-i for i in range(1,t-1)]
+    prev_bcids = [bcid for bcid in tmp_bcids_SS]
+    
+    for t in t_arr:
+        print(t)
+        tmp_bcids_SS, tmp_s_mean_SS, tmp_s_var_SS, tmp_log10bf_SS, tmp_bcids_SN, tmp_s_mean_SN, tmp_s_var_SN, tmp_log10bf_SN = get_tmp_s_from_BayesFiles(lineage_info, t)
+        
+        bcid_dict_SS = {}
+        for i in range(len(tmp_bcids_SS)):
+            bcid_dict_SS.update({tmp_bcids_SS[i]:i})
+        bcid_dict_SN = {}
+        for i in range(len(tmp_bcids_SN)):
+            bcid_dict_SN.update({tmp_bcids_SN[i]:i})
+        #print(bcid_dict_SS.keys())
+        for j in range(len(prev_bcids)):
+            bcid = prev_bcids[j]
+            #print(t,len(prev_bcids),j, bcid)
+            if bcid in bcid_dict_SS.keys():
+                i = bcid_dict_SS[bcid]#np.where(np.asarray(tmp_bcids_SS))[0][0]
+                bcid = tmp_bcids_SS[i]
+                s_mean = tmp_s_mean_SS[i]
+                s_std = np.sqrt(tmp_s_var_SS[i])
+                log10bf = tmp_log10bf_SS[i]
+            elif bcid  in bcid_dict_SN.keys():
+                i = bcid_dict_SN[bcid]#i = np.where(np.asarray(tmp_bcids_SN))[0][0]
+                bcid = tmp_bcids_SN[i]
+                s_mean = tmp_s_mean_SN[i]
+                s_std = np.sqrt(tmp_s_var_SN[i])
+                log10bf = tmp_log10bf_SN[i]
+            else:
+                print('Warning! ')
+                log10bf =''
+                
+            if log10bf >= critical_log10_BF:
+                if bcid not in ADP_BCID_Bayes:
+                    ADP_BCID_Bayes.append(bcid)
+                    ADP_s_mean_Bayes.append(s_mean)
+                    ADP_s_std_Bayes.append(s_std)
+                    ADP_s_time.append(t)
+                    counts.append(1.)
+                else:
+                    idx = ADP_BCID_Bayes.index(bcid)
+                    counts[idx] += 1.
+                    if ADP_s_std_Bayes[idx] > s_std:
+                        ADP_s_mean_Bayes[idx]=s_mean
+                        ADP_s_std_Bayes[idx]=s_std
+                        ADP_s_time[idx]=t
+        prev_bcids = [bcid for bcid in tmp_bcids_SS]
+    
+    index = np.where(np.asarray(counts)>=critical_counts)[0]
+    ADP_BCID_Bayes = [ADP_BCID_Bayes[i] for i in index]
+    ADP_s_mean_Bayes = [ADP_s_mean_Bayes[i] for i in index]
+    ADP_s_std_Bayes = [ADP_s_std_Bayes[i] for i in index]
+    ADP_counts = [counts[i] for i in index]
+    ADP_s_time = [ADP_s_time[i] for i in index]
+    
+    return ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time
+    
 if __name__ == '__main__':
     
     datafilename =  'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
