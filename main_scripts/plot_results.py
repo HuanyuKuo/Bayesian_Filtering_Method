@@ -98,20 +98,22 @@ def mixture_posterior_function(s, mean_arr, std_arr):
 
 if __name__ == '__main__':
     
-    #datafilename = 'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
+    datafilename = 'Data_BarcodeCount_simuMEE_20220213' + '.txt'  
     #datafilename = '41586_2015_BFnature14279_MOESM90_ESM_cycle_downsample'+ '.txt'  
     
-    datafilename = 'Data_BarcodeCount_simuMEE_20220226' + '.txt'
+    #datafilename = 'Data_BarcodeCount_simuMEE_20220226' + '.txt'
     lins, totalread, cycles = mr.my_readfile(datafilename)
     const = Constant(totalread, cycles)
     
     #case_name = 'Simulation_20222013_Population1' 
     #case_name = 'nature2015_Rep1'#'Simulation_20222013_Population1' 
     #case_name = 'Simulation_20220226_NL=10e5' 
-    case_name = 'Simulation_20220226_NL=10e5__testRandLintoFitGlob' 
+    #case_name = 'Simulation_20220226_NL=10e5__testRandLintoFitGlob' 
+    case_name = 'Simulation_20220213'
     lineage_info =  {'lineage_name': case_name}
     
-    simu_name = 'simuMEE_20220226'
+    #simu_name = 'simuMEE_20220226'
+    simu_name = 'simuMEE_20220213'
     # ##################################################
     #
     # Collect output from Bayesian Method and Save results
@@ -122,10 +124,11 @@ if __name__ == '__main__':
     
     
     critical_counts = 2
-    critical_log10_BF = 0.3
+    critical_BF = 2
     
-    ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time = mr.read_selection_Bayes(lineage_info, datafilename, critical_log10_BF, critical_counts)
+    #ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time = mr.read_selection_Bayes(lineage_info, datafilename, critical_log10_BF, critical_counts)
     
+    ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time = mr.read_selection_Bayes_v2(lineage_info, datafilename, critical_BF, critical_counts)
     
     
     
@@ -231,7 +234,7 @@ if __name__ == '__main__':
         plt.ylabel('Bayes S (1/cycle)')
         plt.legend()
         plt.plot([0,1.1 ],[0,1.1],'k--')
-        plt.savefig(mc.OutputFileDir + case_name+ '+Selection_Coefficient_Bayes_log10BF='+str(critical_log10_BF) +'_countT='+str(critical_counts) +'.png',dpi=200)
+        plt.savefig(mc.OutputFileDir + case_name+ '+Selection_Coefficient_Bayes_BF='+str(critical_BF) +'_countT='+str(critical_counts) +'.png',dpi=200)
         
         
         #
