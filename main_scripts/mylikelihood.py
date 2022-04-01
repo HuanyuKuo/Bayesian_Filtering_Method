@@ -51,7 +51,8 @@ def maximum_likelihood_function_global_variable2d(glob, lins, const, t):
     #print(f0, f1, meanfitness_ini)
     #eps_arr = np.arange(0.001,20,1)
     log10eps_min = min(-1 , -1.*np.log10(glob.R) + 1)
-    log10eps_arr = np.arange(log10eps_min,0,0.25)
+    log10eps_max = 5
+    log10eps_arr = np.arange(log10eps_min,log10eps_max,(log10eps_max-log10eps_min)/20)
     
     #eps_max = max(np.log10(glob.R)-1, 0.1)
     #eps_arr = [10**(-i*eps_max/20) for i in range(20)]
@@ -66,7 +67,7 @@ def maximum_likelihood_function_global_variable2d(glob, lins, const, t):
     
     sol = []
     x0 = [meanfitness_ini , log10eps_ini]
-    bounds = [[const.smin, const.smax], [log10eps_min, 0.0]]
+    bounds = [[const.smin, const.smax], [log10eps_min, log10eps_max]]
     sol = minimizeCompass(func= neg_likelihood_function_global_variable_multiprocessing2d, 
                           bounds=bounds, x0 =  x0, args=(glob, lins), 
                           feps=0.001, deltatol=0.01, errorcontrol =ERRORCONTROL, funcNinit=30, paired=False)
