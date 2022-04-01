@@ -53,6 +53,7 @@ The central concept of this method is the Bayesian probability distribution on t
    pip3 install noisyopt
    python3 -m pip install pystan
 2. If you get error message about pickle protocol (model_load = pickle.load(pickle_file) ValueError: unsupported pickle protocol: 5), it's because your current pickle version is different to the pickle version used for packing the model code. To solve this bug, re-run all model codes to generate new pkl files. 
+3. [2022.04.01] Error Message "UnsupportedOperation: fileno" shows when I run model colde "pystan_XModel.py" on Windows 10 (IDE spyder4.2.5). This error is solved if I run under external system terminal (Anaoncda Powershell Prompt).
 
 ### Folder Description
   **./main_scripts/**: python program of Barcode Filtering Method, 
