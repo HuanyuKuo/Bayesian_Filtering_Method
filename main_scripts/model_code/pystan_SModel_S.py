@@ -115,7 +115,7 @@ data {
       // if epsilon = 0, then measure process becomes Poisson (VMR=1)
       // if epsilon = 1  then variance ~ mean ^2 for all results except of zero read count (VMR ~2)
       //
-      real<lower=0,upper=1> epsilon;                      // measurement dispersion
+      real<lower=0> epsilon;                      // measurement dispersion
 
 }
 

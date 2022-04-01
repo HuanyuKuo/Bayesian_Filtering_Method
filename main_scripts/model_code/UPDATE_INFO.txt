@@ -1,3 +1,5 @@
+April 1, 2022
+	remove the upper bound of parameter "epsilon" in all files. 
 Aug 30, 2021
 	pytstan_IModel.py: re-write definition of \epsilon in NB function. 
 	pytstan_NModel.py: re-write definition of \epsilon in NB function. 
