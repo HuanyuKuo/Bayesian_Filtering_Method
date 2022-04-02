@@ -158,6 +158,29 @@ def output_selection_Bayes(lineage_info, datafilename, critical_BF, critical_cou
         f.write(str(ADP_s_time[i])+'\n')
     f.close()
 
+def read_output_selection_Bayes(lineage_info, critical_BF, critical_counts):
+    ADP_BCID_Bayes = []
+    ADP_s_mean_Bayes = [] 
+    ADP_s_std_Bayes = [] 
+    ADP_counts = [] 
+    ADP_s_time = []
+    
+    
+    case_name = lineage_info['lineage_name']
+    f = open(mc.OutputFileDir  + 'S_Bayes_v2_'+case_name+f'_count={critical_counts}'+f'_BFthreshold={critical_BF}.txt','r')
+    f.readline()
+    r = f.readline()
+    while(r):
+        r = r.split('\n')[0].split('\t')
+        ADP_BCID_Bayes.append(int(r[0]))
+        ADP_s_mean_Bayes.append(float(r[1]))
+        ADP_s_std_Bayes.append(float(r[2]))
+        ADP_counts.append(float(r[3]))
+        ADP_s_time.append(int(r[4]))
+        r = f.readline()
+    f.close()
+    return ADP_BCID_Bayes, ADP_s_mean_Bayes, ADP_s_std_Bayes, ADP_counts, ADP_s_time
+
 def get_tmp_s_from_BayesFiles(lineage_info, t):
     
     MODEL_NAME = mc.MODEL_NAME
@@ -169,7 +192,7 @@ def get_tmp_s_from_BayesFiles(lineage_info, t):
     tmp_s_var_SS = []
     tmp_log10bf_SS = []
     readfilename = 'posterior_'+lineage_name+'_'+MODEL_NAME['SS']+f"_T{t}.txt"
-    print(readfilename)
+    #print(readfilename)
     if os.path.exists(OutputFileDir +readfilename) is False:
         print('No file '+OutputFileDir +readfilename+'\n')
     else:
@@ -188,7 +211,7 @@ def get_tmp_s_from_BayesFiles(lineage_info, t):
     tmp_s_var_SN = []
     tmp_log10bf_SN = []
     readfilename = 'posterior_'+lineage_name+'_'+MODEL_NAME['SN']+f"_T{t}.txt"
-    print(readfilename)
+    #print(readfilename)
     if os.path.exists(OutputFileDir +readfilename) is False:
         print('No file '+OutputFileDir +readfilename+'\n')
     else:
@@ -259,7 +282,7 @@ def read_selection_Bayes_v2(lineage_info, datafilename, critical_BF, critical_co
     prev_bcids = [bcid for bcid in tmp_bcids_SS]
     
     for t in t_arr:
-        print(t)
+        #print(t)
         tmp_bcids_SS, tmp_s_mean_SS, tmp_s_var_SS, tmp_log10bf_SS, tmp_bcids_SN, tmp_s_mean_SN, tmp_s_var_SN, tmp_log10bf_SN = get_tmp_s_from_BayesFiles(lineage_info, t)
         
         bcid_dict_SS = {}
